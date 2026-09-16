@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://dagq5830quh6h"
+path="res://.godot/imported/clear_cellcount.glsl-c8395a0b60631bd3071c34a5224d8c9d.res"
+
+[deps]
+
+source_file="res://addons/shaders/clear_cellcount.glsl"
+dest_files=["res://.godot/imported/clear_cellcount.glsl-c8395a0b60631bd3071c34a5224d8c9d.res"]
+
+[params]
+

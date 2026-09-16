@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://k8mfmxs35kym"
+path="res://.godot/imported/scan_add.glsl-c1e85b050d4f62fb53de1aeb5fa68d2f.res"
+
+[deps]
+
+source_file="res://addons/shaders/scan_add.glsl"
+dest_files=["res://.godot/imported/scan_add.glsl-c1e85b050d4f62fb53de1aeb5fa68d2f.res"]
+
+[params]
+

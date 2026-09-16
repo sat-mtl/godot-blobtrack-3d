@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://cq4j02jwunbul"
+path="res://.godot/imported/src-knn.glsl-deb8792b5ee0e212109a73676786651e.res"
+
+[deps]
+
+source_file="res://addons/shaders/src-knn.glsl"
+dest_files=["res://.godot/imported/src-knn.glsl-deb8792b5ee0e212109a73676786651e.res"]
+
+[params]
+
