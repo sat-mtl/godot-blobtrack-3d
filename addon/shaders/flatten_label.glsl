@@ -10,10 +10,12 @@ layout(std430, binding = 6)          buffer ClusterBuf { int clusterId[]; };
 layout(std430, binding = 8) coherent buffer MetaBuf    { int meta[]; };
 
 layout(push_constant) uniform Parameters {
-  // number of points
-  int u_n;
   int u_maxClusters;
 } params;
+
+layout(set = 0, binding = 11, std430) buffer NumPoints {
+  int num;
+} num_points;
 
 
 void main()
@@ -21,7 +23,7 @@ void main()
 	int nValid = meta[12];
 
 	uint stride = gl_NumWorkGroups.x * 256u;
-	for (uint idx = gl_GlobalInvocationID.x; idx < uint(params.u_n); idx += stride)
+	for (uint idx = gl_GlobalInvocationID.x; idx < uint(num_points.num); idx += stride)
 	{
 		int i = int(idx);
 		if (i >= nValid) continue;

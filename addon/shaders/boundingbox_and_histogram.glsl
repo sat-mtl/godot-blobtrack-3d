@@ -10,11 +10,13 @@ layout(std430, binding = 2) coherent buffer CountBuf { uint  cellCount[]; };
 layout(std430, binding = 8) coherent buffer MetaBuf  { int   meta[]; };
 
 layout(push_constant) uniform Parameters {
-  // number of points
-  int u_n;
   uint u_tableSize;
   float u_invCellSize;
 } params;
+
+layout(set = 0, binding = 11, std430) buffer NumPoints {
+  int num;
+} num_points;
 
 shared float sMin[3][256];
 shared float sMax[3][256];
@@ -50,7 +52,7 @@ void main()
 	vec3 hi = vec3(-3.402823466e+38);
 
 	uint stride = gl_NumWorkGroups.x * 256u;
-	for (uint i = gl_GlobalInvocationID.x; i < uint(params.u_n); i += stride)
+	for (uint i = gl_GlobalInvocationID.x; i < uint(num_points.num); i += stride)
 	{
 		vec3 p = vec3(positions[i * 3u], positions[i * 3u + 1u], positions[i * 3u + 2u]);
 		if (!posValid(p)) continue;

@@ -14,16 +14,19 @@ layout(std430, binding = 5)          buffer ParentBuf { int   parent[]; };
 
 layout(push_constant) uniform Parameters {
   // number of points
-  int u_n;
   uint u_tableSize;
   float u_invCellSize;
 } params;
+
+layout(set = 0, binding = 11, std430) buffer NumPoints {
+  int num;
+} num_points;
 
 
 void main()
 {
 	uint stride = gl_NumWorkGroups.x * 256u;
-	for (uint i = gl_GlobalInvocationID.x; i < uint(params.u_n); i += stride)
+	for (uint i = gl_GlobalInvocationID.x; i < uint(num_points.num); i += stride)
 	{
 		vec3 p = vec3(positions[i * 3u], positions[i * 3u + 1u], positions[i * 3u + 2u]);
 		if (!posValid(p)) continue;

@@ -1,0 +1,35 @@
+[gd_scene format=3 uid="uid://dh0oj81pufivs"]
+
+[ext_resource type="Script" uid="uid://bdftf7bk23x0w" path="res://multi_mesh_instance_3d.gd" id="2_n51mc"]
+[ext_resource type="Script" uid="uid://buxrujloeuho5" path="res://flycam.gd" id="3_8lvy3"]
+[ext_resource type="Script" uid="uid://dcng4mqiun5at" path="res://addons/blobtrack3d.gd" id="4_wcwec"]
+
+[sub_resource type="Environment" id="Environment_n51mc"]
+
+[sub_resource type="MultiMesh" id="MultiMesh_wcwec"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_n51mc"]
+
+[node name="Node" type="Node3D" unique_id=1557786834]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1163237184]
+environment = SubResource("Environment_n51mc")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="WorldEnvironment" unique_id=1137034139]
+
+[node name="MultiMeshInstance3D" type="MultiMeshInstance3D" parent="." unique_id=355321578]
+multimesh = SubResource("MultiMesh_wcwec")
+script = ExtResource("2_n51mc")
+
+[node name="CharacterBody3D" type="CharacterBody3D" parent="." unique_id=1226877248]
+transform = Transform3D(1, 0, 0, 0, 0.9395015, -0.34254485, 0, 0.34254485, 0.9395015, -1.6496983, -1.5644388, 6.3257732)
+script = ExtResource("3_8lvy3")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=971053327]
+mesh = SubResource("PlaneMesh_n51mc")
+
+[node name="blobtrack3d" type="Node" parent="." unique_id=258644284]
+unique_name_in_owner = true
+script = ExtResource("4_wcwec")
+
+[node name="Label3D" type="Label3D" parent="." unique_id=1471984046]

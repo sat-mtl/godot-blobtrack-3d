@@ -10,11 +10,14 @@ layout(std430, binding = 5) coherent buffer ParentBuf { int   parent[]; };
 layout(std430, binding = 8) readonly buffer MetaBuf   { int   meta[]; };
 
 layout(push_constant) uniform Parameters {
-  int u_n;
   uint u_tableSize;
   float u_invCellSize;
   float u_clusterDist2;
 } params;
+
+layout(set = 0, binding = 11, std430) buffer NumPoints {
+  int num;
+} num_points;
 
 int ufFind(int x)
 {
@@ -48,7 +51,7 @@ void main()
 	int nValid = meta[12];
 
 	uint stride = gl_NumWorkGroups.x * 128u;
-	for (uint idx = gl_GlobalInvocationID.x; idx < uint(params.u_n); idx += stride)
+	for (uint idx = gl_GlobalInvocationID.x; idx < uint(num_points.num); idx += stride)
 	{
 		int i = int(idx);
 		if (i >= nValid) continue;

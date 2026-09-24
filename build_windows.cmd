@@ -1,0 +1,82 @@
+echo on
+setlocal
+
+cd /d "%~dp0"
+
+:: ===========================================
+:: Ensure running as Administrator
+:: ===========================================
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Administrator privileges required. Exiting.
+	pause    
+	exit 1 /b
+)
+
+:: ===========================================
+:: Set up MSVC 2022 Developer environment
+:: ===========================================
+echo ============================================
+echo  Setting up MSVC 17 (Visual Studio 2022)
+echo ============================================
+
+if not defined VSINSTALLDIR (
+    :: Adjust path if you have a different edition (Community/Professional/Enterprise)
+    call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+    call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+)
+
+:: ===========================================
+:: Check compiler version (optional)
+:: ===========================================
+echo ============================================
+echo  Compiler version:
+cl
+echo ============================================
+
+:: =============================================
+:: Run CMake configure step
+:: =============================================
+echo ============================================
+echo  Configuring project with CMake
+echo ============================================
+
+if "%BUILD_RELEASE%"=="" (
+    :: if BUILD_RELEASE is unset, build in debug mode
+    cmake -B build 
+) else (
+    cmake -B build -DGODOTCPP_TARGET="template_release"
+)
+
+:: Check if the configuring step failed
+if %ERRORLEVEL% neq 0 (
+    echo ============================================
+    echo  Configuration failed with error code %ERRORLEVEL%.
+    echo ============================================
+    exit /b %ERRORLEVEL%
+)
+:: =============================================
+:: Build the solution
+:: =============================================
+echo ============================================
+echo  Building project
+echo ============================================
+if "%BUILD_RELEASE%"=="" (
+   cmake --build build
+) else (
+   cmake --build build --config Release
+)
+
+:: Check if the build itself failed
+if %ERRORLEVEL% neq 0 (
+    echo ============================================
+    echo  Build failed with error code %ERRORLEVEL%.
+    echo ============================================
+    exit /b %ERRORLEVEL%
+)
+
+echo ============================================
+echo  Build completed successfully.
+echo ============================================
+
+exit /b 0

@@ -15,10 +15,12 @@ layout(std430, binding = 7) coherent buffer AccumBuf   { int   accum[]; };
 layout(std430, binding = 8) readonly buffer MetaBuf    { int   meta[]; };
 
 layout(push_constant) uniform Parameters {
-  // number of points
-  int u_n;
   int u_maxClusters;
 } params;
+
+layout(set = 0, binding = 11, std430) buffer NumPoints {
+  int num;
+} num_points;
 
 void atomicMinF(uint idx, float v)
 {
@@ -53,7 +55,7 @@ void main()
 	vec3 scale = vec3(intBitsToFloat(meta[9]), intBitsToFloat(meta[10]), intBitsToFloat(meta[11]));
 
 	uint stride = gl_NumWorkGroups.x * 256u;
-	for (uint i = gl_GlobalInvocationID.x; i < uint(params.u_n); i += stride)
+	for (uint i = gl_GlobalInvocationID.x; i < uint(num_points.num); i += stride)
 	{
 		if (int(i) >= nValid) continue;
 
