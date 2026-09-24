@@ -287,15 +287,16 @@ func initialize_gpu_resources(max_points:int, rendering_device:RenderingDevice):
 	gpu_res.table_size = table_size
 	gpu_res.blocks = blocks
 
-func update_compute_shader_buffers(num_pts):
+func update_compute_shader_buffers(num_pts=null):
 	# reset error string
 	gpu_res.error = ""
 	# don't know where 1e-8 comes from.
 	gpu_res.reinitialize_buffers()
-	var num_pts_bytes = PackedByteArray()
-	num_pts_bytes.resize(4)
-	num_pts_bytes.encode_s32(0, num_pts)
-	rd.buffer_update(gpu_res.num_points_resources.buffer, 0, 4, num_pts_bytes)
+	if num_pts != null:
+		var num_pts_bytes = PackedByteArray()
+		num_pts_bytes.resize(4)
+		num_pts_bytes.encode_s32(0, num_pts)
+		rd.buffer_update(gpu_res.num_points_resources.buffer, 0, 4, num_pts_bytes)
 
 	for shader_resources: ShaderResources in gpu_res.get_all_shader_resources():
 		if shader_resources.uniform_set.is_valid():
@@ -321,6 +322,8 @@ func _add_dispatch(compute_list, points_buffer_rid:RID, points_uniform:RDUniform
 			gpu_res.grid_points_command_buffer_resources.uniform,
 			gpu_res.grid_merge_command_buffer_resources.uniform
 		])
+		# in case something set some push constants earlier in the compute list
+		gpu_res.fill_command_buffers_shader.set_push_constants(compute_list, [])
 		rd.compute_list_dispatch(compute_list, 1, 1, 1)
 		rd.compute_list_add_barrier(compute_list)
 	# 1. adds dispatch for bounding boxes
