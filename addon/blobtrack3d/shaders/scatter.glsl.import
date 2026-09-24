@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://tyl6lerpg0xp"
+path="res://.godot/imported/scatter.glsl-e589bcc1478f28e4015817284ab8e7b5.res"
+
+[deps]
+
+source_file="res://addons/blobtrack3d/shaders/scatter.glsl"
+dest_files=["res://.godot/imported/scatter.glsl-e589bcc1478f28e4015817284ab8e7b5.res"]
+
+[params]
+

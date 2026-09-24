@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://cqbakq65bqln5"
+path="res://.godot/imported/flatten_label.glsl-6a1e4ae65dfadbefd793a7f7cdf6cee0.res"
+
+[deps]
+
+source_file="res://addons/blobtrack3d/shaders/flatten_label.glsl"
+dest_files=["res://.godot/imported/flatten_label.glsl-6a1e4ae65dfadbefd793a7f7cdf6cee0.res"]
+
+[params]
+

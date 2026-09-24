@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://dgpctlaxyo8ox"
+path="res://.godot/imported/clear_accum.glsl-70724437ae671ccf1a589f998c8d9284.res"
+
+[deps]
+
+source_file="res://addons/blobtrack3d/shaders/clear_accum.glsl"
+dest_files=["res://.godot/imported/clear_accum.glsl-70724437ae671ccf1a589f998c8d9284.res"]
+
+[params]
+

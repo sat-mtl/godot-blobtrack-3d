@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://dplfrpdn7aqyb"
+path="res://.godot/imported/accumulate.glsl-9f6d22e669411e8e64c627ebcc72f5bc.res"
+
+[deps]
+
+source_file="res://addons/blobtrack3d/shaders/accumulate.glsl"
+dest_files=["res://.godot/imported/accumulate.glsl-9f6d22e669411e8e64c627ebcc72f5bc.res"]
+
+[params]
+

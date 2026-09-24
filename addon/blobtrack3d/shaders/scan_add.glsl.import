@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://k8mfmxs35kym"
+path="res://.godot/imported/scan_add.glsl-8054d2f4b03cffdc1942c4e61b289447.res"
+
+[deps]
+
+source_file="res://addons/blobtrack3d/shaders/scan_add.glsl"
+dest_files=["res://.godot/imported/scan_add.glsl-8054d2f4b03cffdc1942c4e61b289447.res"]
+
+[params]
+

@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://qgvc8sjlatve"
+path="res://.godot/imported/boundingbox_and_histogram.glsl-097f8267a2a92169ff67b040e538450c.res"
+
+[deps]
+
+source_file="res://addons/blobtrack3d/shaders/boundingbox_and_histogram.glsl"
+dest_files=["res://.godot/imported/boundingbox_and_histogram.glsl-097f8267a2a92169ff67b040e538450c.res"]
+
+[params]
+

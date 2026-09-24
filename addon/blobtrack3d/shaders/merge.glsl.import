@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://dxe3vaoyfiqc6"
+path="res://.godot/imported/merge.glsl-9add618f8a8e230efe4bb70ce9118666.res"
+
+[deps]
+
+source_file="res://addons/blobtrack3d/shaders/merge.glsl"
+dest_files=["res://.godot/imported/merge.glsl-9add618f8a8e230efe4bb70ce9118666.res"]
+
+[params]
+

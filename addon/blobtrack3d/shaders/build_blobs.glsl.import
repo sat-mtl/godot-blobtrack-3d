@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://4i8wc5p4r7lo"
+path="res://.godot/imported/build_blobs.glsl-f82d4aba492937983aaa3591b1132d65.res"
+
+[deps]
+
+source_file="res://addons/blobtrack3d/shaders/build_blobs.glsl"
+dest_files=["res://.godot/imported/build_blobs.glsl-f82d4aba492937983aaa3591b1132d65.res"]
+
+[params]
+

@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://cq4j02jwunbul"
+path="res://.godot/imported/src-knn.glsl-2c6e10e1e24a34f481d4b06a68cdb705.res"
+
+[deps]
+
+source_file="res://addons/blobtrack3d/shaders/src-knn.glsl"
+dest_files=["res://.godot/imported/src-knn.glsl-2c6e10e1e24a34f481d4b06a68cdb705.res"]
+
+[params]
+

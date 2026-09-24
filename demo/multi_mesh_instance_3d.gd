@@ -124,7 +124,10 @@ func _process(_delta: float) -> void:
 	for blob in blobs:
 		DebugDraw.draw_box_aabb(blob.bounding_box, Color(1,1,1,1))
 		DebugDraw.draw_line_3d(blob.centroid, blob.centroid + blob.velocity*3, Color(1,1,1,1))
-		label3ds[cnt].position = blob.centroid
+		if blob.blob_id == 23:
+			label3ds[cnt].position = blob.centroid
+		else:
+			label3ds[cnt].position = Vector3.ONE*-666
 		label3ds[cnt].text = str(blob.blob_id)
 		cnt+=1
 	while cnt < %blobtrack3d.max_blobs:

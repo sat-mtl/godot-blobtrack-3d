@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bdftf7bk23x0w" path="res://multi_mesh_instance_3d.gd" id="2_n51mc"]
 [ext_resource type="Script" uid="uid://buxrujloeuho5" path="res://flycam.gd" id="3_8lvy3"]
-[ext_resource type="Script" uid="uid://dcng4mqiun5at" path="res://addons/blobtrack3d.gd" id="4_wcwec"]
+[ext_resource type="Script" uid="uid://dcng4mqiun5at" path="res://addons/blobtrack3d/blobtrack3d.gd" id="4_wcwec"]
 
 [sub_resource type="Environment" id="Environment_n51mc"]
 

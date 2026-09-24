@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://dagq5830quh6h"
+path="res://.godot/imported/clear_cellcount.glsl-dff4cc1ca0e724797c2674f9e774a2a5.res"
+
+[deps]
+
+source_file="res://addons/blobtrack3d/shaders/clear_cellcount.glsl"
+dest_files=["res://.godot/imported/clear_cellcount.glsl-dff4cc1ca0e724797c2674f9e774a2a5.res"]
+
+[params]
+

@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://14k5y6g84o4a"
+path="res://.godot/imported/propagate.glsl-fbdeb0480504d8764b2b1772a9ed3b94.res"
+
+[deps]
+
+source_file="res://addons/blobtrack3d/shaders/propagate.glsl"
+dest_files=["res://.godot/imported/propagate.glsl-fbdeb0480504d8764b2b1772a9ed3b94.res"]
+
+[params]
+

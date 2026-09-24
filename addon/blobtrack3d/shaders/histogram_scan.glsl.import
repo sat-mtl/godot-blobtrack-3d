@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://klhr8igwc463"
+path="res://.godot/imported/histogram_scan.glsl-fe7399f5f66a1c46bd5465db83cce38e.res"
+
+[deps]
+
+source_file="res://addons/blobtrack3d/shaders/histogram_scan.glsl"
+dest_files=["res://.godot/imported/histogram_scan.glsl-fe7399f5f66a1c46bd5465db83cce38e.res"]
+
+[params]
+

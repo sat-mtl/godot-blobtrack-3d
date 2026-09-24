@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://bbo3wh5win720"
+path="res://.godot/imported/fill_command_buffers.glsl-69ecf425f1f9b6ac32bbf6d3ef6ca3df.res"
+
+[deps]
+
+source_file="res://addons/blobtrack3d/shaders/fill_command_buffers.glsl"
+dest_files=["res://.godot/imported/fill_command_buffers.glsl-69ecf425f1f9b6ac32bbf6d3ef6ca3df.res"]
+
+[params]
+
