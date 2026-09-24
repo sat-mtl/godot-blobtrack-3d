@@ -11,4 +11,4 @@ else
 fi
 make -sC build -j8
 
-cp build/lib/blobtrack3d.linux.template* ./bin/linux/
+cp build/blobtrack3d.linux.template* ./bin/linux/
