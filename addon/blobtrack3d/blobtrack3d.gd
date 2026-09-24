@@ -1,4 +1,5 @@
 extends Node
+class_name Blobtrack3D
 const local_size := 256
 const merge_local_size := 128
 # Elements one workgroup scans in a pass: kLocalSize threads, 4 each.
