@@ -16,19 +16,28 @@ layout(push_constant) uniform Parameters {
   // number of points
   uint u_tableSize;
   float u_invCellSize;
+  uint u_segmentStride;
 } params;
 
-layout(set = 0, binding = 11, std430) buffer NumPoints {
-  int num;
-} num_points;
+layout(set = 0, binding = 11, std430) readonly buffer SegmentSizes {
+  uint sizes[];
+} segment_sizes;
+
+layout(set = 0, binding = 12, std430) readonly buffer SegmentIds {
+  uint ids[];
+} segment_ids;
 
 
 void main()
 {
+	uint seg  = segment_ids.ids[gl_WorkGroupID.y];
+	uint n    = segment_sizes.sizes[seg];
+	uint base = seg * params.u_segmentStride;
 	uint stride = gl_NumWorkGroups.x * 256u;
-	for (uint i = gl_GlobalInvocationID.x; i < uint(num_points.num); i += stride)
+	for (uint i = gl_GlobalInvocationID.x; i < n; i += stride)
 	{
-		vec3 p = vec3(positions[i * 3u], positions[i * 3u + 1u], positions[i * 3u + 2u]);
+		uint g = base + i;
+		vec3 p = vec3(positions[g * 3u], positions[g * 3u + 1u], positions[g * 3u + 2u]);
 		if (!posValid(p)) continue;
 
 		uint b    = bucketOf(cellOf(p, params.u_invCellSize), params.u_tableSize);

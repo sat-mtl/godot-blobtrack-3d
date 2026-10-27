@@ -18,10 +18,6 @@ layout(push_constant) uniform Parameters {
   int u_maxClusters;
 } params;
 
-layout(set = 0, binding = 11, std430) buffer NumPoints {
-  int num;
-} num_points;
-
 void atomicMinF(uint idx, float v)
 {
 	int e = accum[idx];
@@ -55,9 +51,8 @@ void main()
 	vec3 scale = vec3(intBitsToFloat(meta[9]), intBitsToFloat(meta[10]), intBitsToFloat(meta[11]));
 
 	uint stride = gl_NumWorkGroups.x * 256u;
-	for (uint i = gl_GlobalInvocationID.x; i < uint(num_points.num); i += stride)
+	for (uint i = gl_GlobalInvocationID.x; i < uint(nValid); i += stride)
 	{
-		if (int(i) >= nValid) continue;
 
 		int cid = clusterId[i];
 		if (cid < 0) continue;

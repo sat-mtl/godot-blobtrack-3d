@@ -173,6 +173,9 @@ class GPUResource extends RefCounted:
 	var num_points_resources : BufferResources
 	var grid_points_command_buffer_resources : BufferResources
 	var grid_merge_command_buffer_resources : BufferResources
+	var grid_input_command_buffer_resources : BufferResources
+	# segment id list for a compact input: a single segment, id 0.
+	var single_segment_ids_resources : BufferResources
 
 
 	func get_xyz_invocations(required_invocations:int, threads_per_workgroup:int = 64) -> Vector3:
@@ -268,6 +271,9 @@ class GPUResource extends RefCounted:
 		num_points_resources = BufferResources.new(4, 11, rd)
 		grid_points_command_buffer_resources = BufferResources.new(3*uint_size, 0, rd, true)
 		grid_merge_command_buffer_resources = BufferResources.new(3*uint_size, 1, rd, true)
+		grid_input_command_buffer_resources = BufferResources.new(3*uint_size, 2, rd, true)
+		# zero initialized, which is exactly the [0] we want.
+		single_segment_ids_resources = BufferResources.new(uint_size, 12, rd)
 
 # returns the number of invocation for a given n with
 # a certain local size. This is limited to the x dimension of a dispatch
@@ -304,7 +310,16 @@ func update_compute_shader_buffers(num_pts=null):
 			# so we need to create one every frame and if we don't free we eventually crash
 			rd.free_rid(shader_resources.uniform_set)
 
-func _add_dispatch(compute_list, points_buffer_rid:RID, points_uniform:RDUniform, num_pts, num_points_rid: RID, num_points_uniform:RDUniform, indirect=false):
+## makes a storage uniform from a buffer at a given binding.
+func make_storage_uniform(buffer:RID, binding:int) -> RDUniform:
+	var uniform := RDUniform.new()
+	uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_STORAGE_BUFFER
+	uniform.binding = binding
+	uniform.add_id(buffer)
+	return uniform
+
+## do not call this directly.
+func _add_dispatch(compute_list, points_uniform:RDUniform, segment_sizes_uniform:RDUniform, segment_ids_uniform:RDUniform, num_segments:int, segment_sizes:int, num_pts:int, indirect:bool):
 	var current_cluster_distance :float = max(cluster_dist, 1e-8)
 	var current_max_blobs := clamp(max_blobs,1, blob_limit)
 	var cell_size := 1.0 / current_cluster_distance;
@@ -313,29 +328,29 @@ func _add_dispatch(compute_list, points_buffer_rid:RID, points_uniform:RDUniform
 	var grid_table   = grid_for(gpu_res.table_size, local_size);
 	var grid_cluster = grid_for(max_clusters, local_size);
 	var scan_blocks  = gpu_res.table_size / scan_block;
-	var point_count_uniform = num_points_uniform if indirect else gpu_res.num_points_resources.uniform
 	# 0. populated command buffers if we do indirect dispatch
 	if indirect:
 		gpu_res.fill_command_buffers_shader.bind_pipeline(compute_list)
 		gpu_res.fill_command_buffers_shader.create_and_bind_uniform_set(compute_list, [
-			point_count_uniform,
+			segment_sizes_uniform,
+			segment_ids_uniform,
 			gpu_res.grid_points_command_buffer_resources.uniform,
-			gpu_res.grid_merge_command_buffer_resources.uniform
+			gpu_res.grid_merge_command_buffer_resources.uniform,
+			gpu_res.grid_input_command_buffer_resources.uniform
 		])
-		# in case something set some push constants earlier in the compute list
-		gpu_res.fill_command_buffers_shader.set_push_constants(compute_list, [])
+		gpu_res.fill_command_buffers_shader.set_push_constants(compute_list, [num_segments])
 		rd.compute_list_dispatch(compute_list, 1, 1, 1)
 		rd.compute_list_add_barrier(compute_list)
 	# 1. adds dispatch for bounding boxes
 	gpu_res.bbox_count_shader.bind_pipeline(compute_list)
 	gpu_res.bbox_count_shader.create_and_bind_uniform_set(compute_list, [
-		point_count_uniform, points_uniform, gpu_res.cell_count_resources.uniform, gpu_res.meta_resources.uniform
+		segment_sizes_uniform, segment_ids_uniform, points_uniform, gpu_res.cell_count_resources.uniform, gpu_res.meta_resources.uniform
 	])
-	gpu_res.bbox_count_shader.set_push_constants(compute_list, [gpu_res.table_size, cell_size])
+	gpu_res.bbox_count_shader.set_push_constants(compute_list, [gpu_res.table_size, cell_size, segment_sizes])
 	if not indirect:
-		rd.compute_list_dispatch(compute_list, grid_points, 1, 1)
+		rd.compute_list_dispatch(compute_list, grid_points, num_segments, 1)
 	else:
-		rd.compute_list_dispatch_indirect(compute_list, gpu_res.grid_points_command_buffer_resources.buffer,0)
+		rd.compute_list_dispatch_indirect(compute_list, gpu_res.grid_input_command_buffer_resources.buffer,0)
 	rd.compute_list_add_barrier(compute_list)
 	# 2. adds dispatch for scan blocks
 	gpu_res.scan_blocks_shader.bind_pipeline(compute_list)
@@ -369,19 +384,19 @@ func _add_dispatch(compute_list, points_buffer_rid:RID, points_uniform:RDUniform
 	gpu_res.scatter_shader.bind_pipeline(compute_list)
 	gpu_res.scatter_shader.create_and_bind_uniform_set(compute_list, [
 		# the binding 2 ( cell_count ) is called "cursor" in the shader ???
-		point_count_uniform, points_uniform, gpu_res.sorted_points_resources.uniform, gpu_res.cell_count_resources.uniform, gpu_res.cell_start_resources.uniform, gpu_res.parent_resources.uniform
+		segment_sizes_uniform, segment_ids_uniform, points_uniform, gpu_res.sorted_points_resources.uniform, gpu_res.cell_count_resources.uniform, gpu_res.cell_start_resources.uniform, gpu_res.parent_resources.uniform
 	])
-	gpu_res.scatter_shader.set_push_constants(compute_list, [gpu_res.table_size, cell_size])
+	gpu_res.scatter_shader.set_push_constants(compute_list, [gpu_res.table_size, cell_size, segment_sizes])
 	if not indirect:
-		rd.compute_list_dispatch(compute_list, grid_points, 1, 1)
+		rd.compute_list_dispatch(compute_list, grid_points, num_segments, 1)
 	else:
-		rd.compute_list_dispatch_indirect(compute_list, gpu_res.grid_points_command_buffer_resources.buffer,0)
+		rd.compute_list_dispatch_indirect(compute_list, gpu_res.grid_input_command_buffer_resources.buffer,0)
 	rd.compute_list_add_barrier(compute_list)
 
 	#6.
 	gpu_res.merge_shader.bind_pipeline(compute_list)
 	gpu_res.merge_shader.create_and_bind_uniform_set(compute_list, [
-		point_count_uniform, gpu_res.sorted_points_resources.uniform, gpu_res.cell_start_resources.uniform, gpu_res.parent_resources.uniform, gpu_res.meta_resources.uniform
+		gpu_res.sorted_points_resources.uniform, gpu_res.cell_start_resources.uniform, gpu_res.parent_resources.uniform, gpu_res.meta_resources.uniform
 	])
 	gpu_res.merge_shader.set_push_constants(compute_list, [gpu_res.table_size, cell_size, current_cluster_distance*current_cluster_distance])
 	if not indirect:
@@ -393,7 +408,7 @@ func _add_dispatch(compute_list, points_buffer_rid:RID, points_uniform:RDUniform
 	#7.
 	gpu_res.flatten_shader.bind_pipeline(compute_list)
 	gpu_res.flatten_shader.create_and_bind_uniform_set(compute_list, [
-		point_count_uniform, gpu_res.parent_resources.uniform, gpu_res.cluster_id_resources.uniform, gpu_res.meta_resources.uniform
+		gpu_res.parent_resources.uniform, gpu_res.cluster_id_resources.uniform, gpu_res.meta_resources.uniform
 	])
 	gpu_res.flatten_shader.set_push_constants(compute_list, [max_clusters])
 	if not indirect:
@@ -405,7 +420,7 @@ func _add_dispatch(compute_list, points_buffer_rid:RID, points_uniform:RDUniform
 	#8.
 	gpu_res.propagate_shader.bind_pipeline(compute_list)
 	gpu_res.propagate_shader.create_and_bind_uniform_set(compute_list, [
-		point_count_uniform, gpu_res.parent_resources.uniform, gpu_res.cluster_id_resources.uniform, gpu_res.meta_resources.uniform
+		gpu_res.parent_resources.uniform, gpu_res.cluster_id_resources.uniform, gpu_res.meta_resources.uniform
 	])
 	gpu_res.propagate_shader.set_push_constants(compute_list, [])
 	if not indirect:
@@ -417,7 +432,7 @@ func _add_dispatch(compute_list, points_buffer_rid:RID, points_uniform:RDUniform
 	#9.
 	gpu_res.accumulate_shader.bind_pipeline(compute_list)
 	gpu_res.accumulate_shader.create_and_bind_uniform_set(compute_list, [
-		point_count_uniform, gpu_res.sorted_points_resources.uniform, gpu_res.cluster_id_resources.uniform, gpu_res.accum_resources.uniform, gpu_res.meta_resources.uniform
+		gpu_res.sorted_points_resources.uniform, gpu_res.cluster_id_resources.uniform, gpu_res.accum_resources.uniform, gpu_res.meta_resources.uniform
 	])
 	gpu_res.accumulate_shader.set_push_constants(compute_list, [max_clusters])
 	if not indirect:
@@ -436,10 +451,21 @@ func _add_dispatch(compute_list, points_buffer_rid:RID, points_uniform:RDUniform
 
 
 ## indirectly dispatch the from a uniform buffer that contains the number of points in the points uniform.
+## points_uniform must use binding 0 and num_points_uniform binding 11.
 func add_dispatch_indirect(compute_list, points_buffer_rid:RID, points_uniform:RDUniform, num_points_rid: RID, num_points_uniform:RDUniform):
-	_add_dispatch(compute_list, points_buffer_rid, points_uniform, 0, num_points_rid, num_points_uniform, true)
+	_add_dispatch(compute_list, points_uniform, num_points_uniform, gpu_res.single_segment_ids_resources.uniform, 1, 0, 0, true)
+
 func add_dispatches_to_compute_list(compute_list, points_buffer_rid:RID, points_uniform:RDUniform, num_pts):
-	_add_dispatch(compute_list, points_buffer_rid, points_uniform, num_pts, RID(), null, false)
+	_add_dispatch(compute_list, points_uniform, gpu_res.num_points_resources.uniform, gpu_res.single_segment_ids_resources.uniform, 1, 0, num_pts, false)
+
+## adds a dispatch over multiple buffers of the same size. This is for Carto which has one fixed sized buffer for each of its devices.
+func add_dispatch_segmented(compute_list, points_buffer:RID, segment_sizes_buffer:RID, segment_ids_buffer:RID, num_segments:int, segment_sizes:int):
+	_add_dispatch(compute_list,
+		make_storage_uniform(points_buffer, 0),
+		make_storage_uniform(segment_sizes_buffer, 11),
+		make_storage_uniform(segment_ids_buffer, 12),
+		num_segments, segment_sizes, 0, true)
+
 enum meta {num_valid=12, cluster_count=13, blob_count=14, overflow=15}
 
 class ClusterResult extends RefCounted:

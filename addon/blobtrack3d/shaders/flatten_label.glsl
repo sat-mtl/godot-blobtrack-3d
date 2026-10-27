@@ -13,20 +13,15 @@ layout(push_constant) uniform Parameters {
   int u_maxClusters;
 } params;
 
-layout(set = 0, binding = 11, std430) buffer NumPoints {
-  int num;
-} num_points;
-
 
 void main()
 {
 	int nValid = meta[12];
 
 	uint stride = gl_NumWorkGroups.x * 256u;
-	for (uint idx = gl_GlobalInvocationID.x; idx < uint(num_points.num); idx += stride)
+	for (uint idx = gl_GlobalInvocationID.x; idx < uint(nValid); idx += stride)
 	{
 		int i = int(idx);
-		if (i >= nValid) continue;
 
 		int r = i;
 		while (parent[r] != r)

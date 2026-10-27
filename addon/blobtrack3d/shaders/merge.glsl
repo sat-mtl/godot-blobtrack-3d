@@ -15,10 +15,6 @@ layout(push_constant) uniform Parameters {
   float u_clusterDist2;
 } params;
 
-layout(set = 0, binding = 11, std430) buffer NumPoints {
-  int num;
-} num_points;
-
 int ufFind(int x)
 {
 	int r = x;
@@ -51,10 +47,9 @@ void main()
 	int nValid = meta[12];
 
 	uint stride = gl_NumWorkGroups.x * 128u;
-	for (uint idx = gl_GlobalInvocationID.x; idx < uint(num_points.num); idx += stride)
+	for (uint idx = gl_GlobalInvocationID.x; idx < uint(nValid); idx += stride)
 	{
 		int i = int(idx);
-		if (i >= nValid) continue;
 
 		vec3  p = vec3(posSorted[idx * 3u], posSorted[idx * 3u + 1u], posSorted[idx * 3u + 2u]);
 		ivec3 c = cellOf(p, params.u_invCellSize);
