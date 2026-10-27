@@ -155,7 +155,7 @@ class GPUResource extends RefCounted:
 	func get_all_shader_resources():
 		return [bbox_count_shader, scan_blocks_shader, scan_sum_shader, scan_add_shader,
 			scatter_shader, merge_shader, flatten_shader, propagate_shader,
-			accumulate_shader, build_blobs_shader, accum_init_shader,]
+			accumulate_shader, build_blobs_shader, accum_init_shader, fill_command_buffers_shader]
 
 	var accum_init_pipeline : RID
 	var points_uniform : RDUniform
