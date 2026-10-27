@@ -32,7 +32,7 @@ void BlobTrack3D::_bind_methods() {
   ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_point_count"), "set_use_point_count", "get_use_point_count");
   godot::ClassDB::bind_method(D_METHOD("set_point_count_weight", "p_point_count_weight"), &BlobTrack3D::set_point_count_weight);
   godot::ClassDB::bind_method(D_METHOD("get_point_count_weight"), &BlobTrack3D::get_point_count_weight);
-  ADD_PROPERTY(PropertyInfo(Variant::BOOL, "point_count_weight"), "set_point_count_weight", "get_point_count_weight");
+  ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "point_count_weight"), "set_point_count_weight", "get_point_count_weight");
 }
 
 const Array& BlobTrack3D::track_blobs(PackedByteArray blobs, int num_detected) {

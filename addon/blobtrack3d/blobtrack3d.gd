@@ -66,7 +66,7 @@ var merge_memory_frames: int:
 		return cpp_blobtrack.merge_memory_frames
 	set(val):
 		cpp_blobtrack.merge_memory_frames = val
-var smoothing: int:
+var smoothing: float:
 	get():
 		return cpp_blobtrack.smoothing
 	set(val):
@@ -76,7 +76,7 @@ var use_point_count: bool:
 		return cpp_blobtrack.use_point_count
 	set(val):
 		cpp_blobtrack.use_point_count = val
-var point_count_weight: int:
+var point_count_weight: float:
 	get():
 		return cpp_blobtrack.point_count_weight
 	set(val):

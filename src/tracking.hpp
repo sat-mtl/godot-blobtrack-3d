@@ -69,7 +69,7 @@ class GodotBlob : public RefCounted {
     ADD_PROPERTY(PropertyInfo(Variant::AABB, "bounding_box"), "set_bounding_box", "get_bounding_box");
     ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "centroid"), "set_centroid", "get_centroid");
     ADD_PROPERTY(PropertyInfo(Variant::INT, "blob_id"), "set_blob_id", "get_blob_id");
-    ADD_PROPERTY(PropertyInfo(Variant::INT, "velocity"), "set_velocity", "get_velocity");
+    ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "velocity"), "set_velocity", "get_velocity");
   }
  public:
 
