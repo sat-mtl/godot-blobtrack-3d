@@ -1,0 +1,61 @@
+name: Build GDExtension
+on:
+  workflow_call:
+  push:
+  pull_request:
+  merge_group:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          [
+            { platform: linux, arch: x86_64, os: ubuntu-22.04 },
+            { platform: windows, arch: x86_64, os: windows-latest },
+          ]
+        target-type: [template_debug, template_release]
+
+    runs-on: ${{ matrix.target.os }}
+    steps:
+      # Clone this repository (and godot-cpp)
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Linux - build
+        if: ${{ matrix.target.platform != 'windows' }}
+        shell: bash
+        run: |
+          if [ "${{ matrix.target-type }}" = "template_release" ]; then
+             BUILD_RELEASE=yes ./build.sh
+          else
+             ./build.sh
+          fi
+
+      - name: Windows - build
+        if: ${{ matrix.target.platform == 'windows' }}
+        shell: cmd
+        run: |
+          if "${{ matrix.target-type }}"=="template_release" (
+             set BUILD_RELEASE=YES
+          )
+          call build_windows.cmd
+
+      # Clean up compilation files
+      - name: Windows - Delete compilation files
+        if: ${{ matrix.target.platform == 'windows' }}
+        shell: pwsh
+        run: |
+          Get-ChildItem bin -Recurse -Include *.exp,*.lib,*.pdb | Remove-Item -Force
+
+      # Upload the build
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-blobtrack-3d-${{ matrix.target.platform }}-${{ matrix.target.arch }}-${{ matrix.target-type }}
+          path: |
+            ${{ github.workspace }}/bin/**
+          if-no-files-found: error
