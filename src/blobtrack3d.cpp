@@ -33,6 +33,11 @@ void BlobTrack3D::_bind_methods() {
   godot::ClassDB::bind_method(D_METHOD("set_point_count_weight", "p_point_count_weight"), &BlobTrack3D::set_point_count_weight);
   godot::ClassDB::bind_method(D_METHOD("get_point_count_weight"), &BlobTrack3D::get_point_count_weight);
   ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "point_count_weight"), "set_point_count_weight", "get_point_count_weight");
+  godot::ClassDB::bind_method(D_METHOD("set_max_blob_id", "p_max_blob_id"), &BlobTrack3D::set_max_blob_id);
+  godot::ClassDB::bind_method(D_METHOD("get_max_blob_id"), &BlobTrack3D::get_max_blob_id);
+  ADD_PROPERTY(PropertyInfo(Variant::INT, "max_blob_id"), "set_max_blob_id", "get_max_blob_id");
+
+
 }
 
 const Array& BlobTrack3D::track_blobs(PackedByteArray blobs, int num_detected) {
@@ -120,30 +125,59 @@ void BlobTrack3D::track_frame(int num_detected) {
 
   recover_split_tracks(num_detected);
 
+  // Mark every id that is still referenced somewhere
+  id_state.assign(std::max(max_blob_id, 0), id_free);
+  auto mark = [&](int32_t id, char state) {
+    if (id >= 0 && id < (int32_t)id_state.size())
+      id_state[id] = std::max(id_state[id], state);
+  };
+  for (const auto& t : trackers)
+    mark(t.id, t.timeSinceUpdate == 0 ? id_active : id_lost);
+  for (const auto& m : merge_memories)
+  {
+    mark(m.storedID, id_memory);
+    mark(m.absorberID, id_memory);
+  }
+  for (const auto& b : smoothed_blobs)
+    mark(b.id, id_memory);
+
+  // ids that had to be taken from an old tracker / merge memory because no
+  // free id was left. Their previous owners are evicted below.
+  evicted_ids.clear();
+  // new trackers are only added after the eviction so they don't evict themselves.
+  pending_trackers.clear();
   // create a kalman tracker for detections that
   // did not already have one
   for (int d = 0; d < num_dets; d++)
   {
     if (detections_matched[d])
       continue;
+    const int32_t id = allocate_blob_id();
+    if (id < 0)
+      continue;  // more new blobs this frame than max_blob_id
     KalmanTracker3D trk;
-    trk.init(detections[d], next_blob_id++);
-    trackers.push_back(trk);
+    trk.init(detections[d], id);
+    pending_trackers.push_back(trk);
   }
-  // delete merge memories that are too old
+  auto is_evicted = [&](int32_t id) {
+    return std::find(evicted_ids.begin(), evicted_ids.end(), id) != evicted_ids.end();
+  };
+  // delete merge memories that are too old or whose id was evicted
+  // (the id now belongs to a new blob, so the memory is meaningless)
   for (size_t i = 0; i < merge_memories.size();)
   {
-    if (++merge_memories[i].age > current_merge_memory_frames)
+    if (++merge_memories[i].age > current_merge_memory_frames ||
+        is_evicted(merge_memories[i].storedID) || is_evicted(merge_memories[i].absorberID))
       merge_memories.erase(merge_memories.begin() + i);
     else
       i++;
   }
-  // delete trackers that are too old
+  // delete trackers that are too old or whose id was evicted
   trackers.erase(std::remove_if(trackers.begin(), trackers.end(),
                                 [&](const KalmanTracker3D& t)
-                                { return t.timeSinceUpdate > current_max_age; }),
+                                { return t.timeSinceUpdate > current_max_age || is_evicted(t.id); }),
                  trackers.end());
-
+  trackers.insert(trackers.end(), pending_trackers.begin(), pending_trackers.end());
   // TODO: use the blobs already allocated here instead of
   // clearing and making new blobs.
   tracked_blobs.clear();
@@ -157,6 +191,47 @@ void BlobTrack3D::track_frame(int num_detected) {
       tracked_blobs.push_back(trk.getState());
   }
   current_frame_count++;
+}
+
+// Returns a new blob id, preferring ids nobody references. When every id in
+// [0, max_blob_id) is referenced, evicts one held only by a merge memory, or
+// else by a lost tracker, and records it in evicted_ids so its old owner gets
+// removed. Returns -1 if every id belongs to a tracker updated this frame or
+// was handed out this frame.
+// Expects id_state to have been filled for the current frame.
+int32_t BlobTrack3D::allocate_blob_id() {
+  if (max_blob_id <= 0)
+    return ++next_blob_id;
+
+  // first pass: a free id
+  for (int32_t i = 0; i < max_blob_id; i++)
+  {
+    next_blob_id = (next_blob_id + 1) % max_blob_id;
+    if (id_state[next_blob_id] == id_free)
+    {
+      id_state[next_blob_id] = id_new;
+      return next_blob_id;
+    }
+  }
+  // no free id left: evict, cheapest owner first (merge memories, then lost
+  // trackers). Trackers updated this frame are never evicted, otherwise
+  // having more blobs than ids makes trackers steal each other's id every
+  // frame and none of them ever reaches min_hits.
+  for (char evictable : { id_memory, id_lost })
+  {
+    for (int32_t i = 0; i < max_blob_id; i++)
+    {
+      next_blob_id = (next_blob_id + 1) % max_blob_id;
+      if (id_state[next_blob_id] == evictable)
+      {
+        id_state[next_blob_id] = id_new;
+        evicted_ids.push_back(next_blob_id);
+        return next_blob_id;
+      }
+    }
+  }
+  // every id belongs to a blob tracked this frame: this detection stays untracked.
+  return -1;
 }
 
 void BlobTrack3D::absorb_unmatched_tracks() {

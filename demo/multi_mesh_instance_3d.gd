@@ -109,10 +109,10 @@ func _process(_delta: float) -> void:
 	set_points(current_frame)
 	%blobtrack3d.cluster_dist = 0.1
 	%blobtrack3d.min_points = 100
+	%blobtrack3d.max_blob_id = 200
 	%blobtrack3d.update_compute_shader_buffers(current_frame.pts)
 	rd.buffer_update(points_num_buffer, 0, 12, PackedInt32Array([current_frame.pts, 1, 1]).to_byte_array())
 	var compute_list := rd.compute_list_begin()
-	print(current_frame.pts)
 	# direct dispatch dispatch if you know exactly the number of points there are in the frame
 	#%blobtrack3d.add_dispatches_to_compute_list(compute_list, current_frame.points_buffer, current_frame.points_uniform, current_frame.pts)
 	# indirect dispatch, you would populate the points_count uniform with the number of points in the
@@ -124,10 +124,7 @@ func _process(_delta: float) -> void:
 	for blob in blobs:
 		DebugDraw.draw_box_aabb(blob.bounding_box, Color(1,1,1,1))
 		DebugDraw.draw_line_3d(blob.centroid, blob.centroid + blob.velocity*3, Color(1,1,1,1))
-		if blob.blob_id == 23:
-			label3ds[cnt].position = blob.centroid
-		else:
-			label3ds[cnt].position = Vector3.ONE*-666
+		label3ds[cnt].position = blob.centroid
 		label3ds[cnt].text = str(blob.blob_id)
 		cnt+=1
 	while cnt < %blobtrack3d.max_blobs:

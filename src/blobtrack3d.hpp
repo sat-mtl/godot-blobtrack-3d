@@ -90,6 +90,14 @@ public:
   void set_point_count_weight(float point_count_weight) {
     current_point_count_weight = point_count_weight;
   }
+
+  void set_max_blob_id(int32_t mx_bid) {
+    max_blob_id = mx_bid;
+  }
+  int32_t get_max_blob_id() {
+    return max_blob_id;
+  }
+
   void reset();
 
 private:
@@ -98,12 +106,25 @@ private:
   void absorb_unmatched_tracks();
   void recover_split_tracks(int num_detected);
   void track_frame(int num_detected);
+  int32_t allocate_blob_id();
   void build_output(const std::vector<Blob>& pre_out);
   std::vector<KalmanTracker3D> trackers{};
   std::vector<MergeMemory> merge_memories{};
   std::vector<Blob> tracked_blobs{};
   std::vector<Blob> smoothed_blobs{};
   int32_t next_blob_id = 0;
+  int32_t max_blob_id = 300;
+  // per-id state used when allocating ids for new trackers
+  // ordered by priority: an id gets the highest state of everything referencing it,
+  // and only id_memory / id_lost ids can be evicted.
+  static constexpr char id_free   = 0;  // not referenced anywhere
+  static constexpr char id_memory = 1;  // only held by a merge memory or smoothed blob
+  static constexpr char id_lost   = 2;  // held by a tracker that was not updated this frame
+  static constexpr char id_active = 3;  // held by a tracker updated this frame, never evicted
+  static constexpr char id_new    = 4;  // handed out to a new tracker this frame
+  std::vector<char> id_state{};
+  std::vector<int32_t> evicted_ids{};
+  std::vector<KalmanTracker3D> pending_trackers{};
   std::array<Blob, max_blobs> detections{};
   std::vector<Blob> predictions{};
   std::vector<float> cost_matrix{};
