@@ -82,6 +82,12 @@ var point_count_weight: float:
 	set(val):
 		cpp_blobtrack.point_count_weight = val
 
+var max_blob_id: int:
+	get():
+		return cpp_blobtrack.max_blob_id
+	set(val):
+		cpp_blobtrack.max_blob_id = val
+
 class BufferResources extends RefCounted:
 		var buffer := RID()
 		var uniform := RDUniform.new()
